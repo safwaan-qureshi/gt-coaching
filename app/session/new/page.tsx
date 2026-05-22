@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Header } from '@/components/Header'
-import { supabase } from '@/lib/supabase'
 import type { EmpAction } from '@/lib/types'
 
 const FOCUS_OPTIONS = [
@@ -98,22 +97,27 @@ export default function NewSessionPage() {
     setSaveError('')
     setSaving(true)
     const filteredActions = form.emp_actions.filter(a => a.text.trim())
-    const { error } = await supabase.from('coaching_sessions').insert({
-      session_date: form.session_date,
-      member_name: form.member_name.trim(),
-      focus: form.focus,
-      mood: form.mood,
-      context: form.context || null,
-      discussed: form.discussed || null,
-      strengths: form.strengths || null,
-      private_notes: form.private_notes || null,
-      emp_actions: filteredActions,
-      followup: form.followup || null,
-      sig_coach: form.sig_coach || null,
-      sig_employee: form.sig_employee || null,
+    const res = await fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_date: form.session_date,
+        member_name: form.member_name.trim(),
+        focus: form.focus,
+        mood: form.mood,
+        context: form.context || null,
+        discussed: form.discussed || null,
+        strengths: form.strengths || null,
+        private_notes: form.private_notes || null,
+        emp_actions: filteredActions,
+        followup: form.followup || null,
+        sig_coach: form.sig_coach || null,
+        sig_employee: form.sig_employee || null,
+      }),
     })
+    const data = await res.json()
     setSaving(false)
-    if (error) { setSaveError('Erreur lors de la sauvegarde : ' + error.message); return }
+    if (!res.ok || data.error) { setSaveError('Erreur lors de la sauvegarde : ' + (data.error ?? res.statusText)); return }
     router.push('/history')
   }
 
