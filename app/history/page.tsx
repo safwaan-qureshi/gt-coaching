@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { Header } from '@/components/Header'
 import { SessionCard } from '@/components/SessionCard'
-import { supabase } from '@/lib/supabase'
 import type { CoachingSession } from '@/lib/types'
 
 const FOCUS_OPTIONS = [
@@ -37,11 +36,9 @@ export default function HistoryPage() {
 
   const loadSessions = useCallback(async () => {
     setFetching(true)
-    const { data } = await supabase
-      .from('coaching_sessions')
-      .select('*')
-      .order('session_date', { ascending: false })
-    setSessions((data as CoachingSession[]) ?? [])
+    const res = await fetch('/api/sessions')
+    const data = await res.json()
+    setSessions(Array.isArray(data) ? (data as CoachingSession[]) : [])
     setFetching(false)
   }, [])
 

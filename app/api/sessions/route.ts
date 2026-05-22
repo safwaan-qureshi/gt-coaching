@@ -6,6 +6,15 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+export async function GET() {
+  const { data, error } = await supabase
+    .from('coaching_sessions')
+    .select('*')
+    .order('session_date', { ascending: false })
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data)
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json()
